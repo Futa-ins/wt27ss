@@ -641,6 +641,9 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
+const VER="2026101302";
+// 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
+try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
 const escH=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const READ=new Set(["boot","getState","getProduct","getSeasons"]);
