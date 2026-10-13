@@ -1,7 +1,7 @@
 {
   "name": "WILD THINGS 納期・EC販売カレンダー",
   "short_name": "WTカレンダー",
-  "description": "WILD THINGS 27SS 納期・EC販売カレンダー（社内用）",
+  "description": "WILD THINGS 納期・EC販売カレンダー（社内用）",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
