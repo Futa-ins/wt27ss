@@ -665,7 +665,7 @@ if(q.get("a")==="uapprove"||q.get("a")==="ureject"){
   $("gLoading").innerHTML="<p>処理しています…</p>";
   api("decideUser",q.get("a"),q.get("u")||"",q.get("k")||"").then(m=>{ $("gLoading").innerHTML="<p><b>"+escH(m)+"</b></p><p class=\"note\">このページは閉じてかまいません。</p>"; }).catch(e=>fail("処理できませんでした。時間をおいてもう一度お試しください。",e));
   return; }
-let TOKEN=q.get("t")||""; const KEY=q.get("key")||"";
+let TOKEN=q.get("t")||""; const KEY=q.get("key")||ls.get("wt27ss-key"); if(q.get("key")) ls.set("wt27ss-key",q.get("key"));
 if(TOKEN) ls.set("wt27ss-token",TOKEN); else TOKEN=ls.get("wt27ss-token");
 if(q.get("t")){ q.delete("t"); try{ history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")); }catch(_){} }
 let pendT=null;
