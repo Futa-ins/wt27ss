@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>使い方 | WILD THINGS 納期・EC販売カレンダー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--fg:#1d1b18;--muted:#6b665d;--line:#e2ddd3;--blaze:#ff6a2b;--blaze-ink:#c94a12;--head:#0d0d0c;--tip:#fff4ec}
+@media (prefers-color-scheme:dark){:root{--bg:#121110;--card:#1b1a18;--fg:#eeeae2;--muted:#a59f94;--line:#2f2c28;--blaze-ink:#ff8a55;--tip:#2a1d15}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.8 "IBM Plex Sans JP",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--blaze-ink)}
+header{background:var(--head);color:#fff;padding:28px 16px 22px;border-bottom:4px solid var(--blaze)}
+header .in,main{max-width:860px;margin:0 auto}
+header small{font-family:Oswald,sans-serif;letter-spacing:.25em;color:var(--blaze);font-size:13px}
+header h1{font-family:Oswald,sans-serif;font-weight:600;font-size:clamp(24px,6vw,34px);line-height:1.2;margin:4px 0 6px;letter-spacing:.02em}
+header p{margin:0;color:#cfc9bf;font-size:14px}
+.back{display:inline-block;margin-top:14px;background:var(--blaze);color:#000;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:3px}
+main{padding:20px 16px 64px}
+nav.toc{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 18px;margin-bottom:22px}
+nav.toc b{font-size:13px;color:var(--muted)}
+nav.toc ol{margin:6px 0 0;padding-left:1.4em;columns:2;column-gap:28px}
+@media (max-width:560px){nav.toc ol{columns:1}}
+section{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin:0 0 16px;scroll-margin-top:12px}
+h2{font-size:18px;margin:0 0 10px;padding-left:10px;border-left:5px solid var(--blaze);line-height:1.4}
+h2 .en{font-family:Oswald,sans-serif;font-weight:500;font-size:12px;letter-spacing:.15em;color:var(--muted);margin-left:8px}
+h3{font-size:15px;margin:16px 0 4px}
+ol,ul{padding-left:1.4em;margin:6px 0}
+li{margin:3px 0}
+.tip{background:var(--tip);border-left:4px solid var(--blaze);padding:10px 14px;border-radius:3px;margin:12px 0;font-size:14px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:460px}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;white-space:nowrap}
+td:first-child{white-space:nowrap;font-weight:700}
+kbd{font:12px/1 "IBM Plex Sans JP",sans-serif;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:2px 6px;background:var(--bg)}
+.chip{display:inline-block;font-size:12px;padding:0 6px;border-radius:2px;margin:0 2px}
+.chip.due{background:#d9d5cc;color:#333}
+.chip.sale{background:var(--blaze);color:#000}
+.admin{border:2px dashed var(--blaze)}
+.admin-h{font-family:Oswald,sans-serif;letter-spacing:.2em;color:var(--blaze-ink);font-size:13px;margin:34px 0 10px}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <small>HOW TO USE</small>
+  <h1>納期・EC販売カレンダー 使い方</h1>
+  <p>WILD THINGS 2027 SPRING / SUMMER</p>
+  <a class="back" href="./">← カレンダーを開く</a>
+</div></header>
+<main>
+
+<nav class="toc"><b>もくじ</b>
+<ol>
+  <li><a href="#about">このサイトについて</a></li>
+  <li><a href="#start">はじめて開くとき</a></li>
+  <li><a href="#phone">スマホで使う</a></li>
+  <li><a href="#season">シーズンを選ぶ</a></li>
+  <li><a href="#screen">画面の見方</a></li>
+  <li><a href="#move">日付・ラインを変える</a></li>
+  <li><a href="#product">商品ページ・カタログ</a></li>
+  <li><a href="#trouble">困ったとき</a></li>
+  <li><a href="#admin">管理者向け</a></li>
+</ol></nav>
+
+<section id="about">
+  <h2>このサイトについて<span class="en">ABOUT</span></h2>
+  <p>27SSの各品番の<b>納期</b>と<b>EC販売日</b>を、カレンダーでまとめて見て、みんなで調整するためのサイトです。</p>
+  <ul>
+    <li>納期は、サクライの納期指定（オーダーシート）がもとになっています。</li>
+    <li>EC販売日は<b>仮設定</b>です。2月〜5月の隔週木曜を発売日にした「発売計画」を初期値として入れています。</li>
+    <li>誰かが日付やラインを変えると、<b>すぐ全員の画面に反映</b>され、「変更履歴」に名前つきで残ります。</li>
+  </ul>
+  <div class="tip">プロトタイプなので、「こうしたい」「ここが使いにくい」があれば、ぜひ木原まで教えてください。</div>
+</section>
+
+<section id="start">
+  <h2>はじめて開くとき<span class="en">FIRST TIME</span></h2>
+  <ol>
+    <li>カレンダーのURLを開きます：<a href="./">https://futa-ins.github.io/wt27ss/</a></li>
+    <li>申請画面が出たら、<b>お名前</b>と<b>メールアドレス</b>を入れて「アクセスを申請する」を押します。</li>
+    <li><b>@ins.fm のアドレス</b>なら自動で承認され、そのままカレンダーに切り替わります。<br>それ以外のアドレスは木原が承認すると、開いたままの画面が自動で切り替わります。</li>
+  </ol>
+  <div class="tip">次回からは、<b>同じブラウザ</b>でURLを開くだけで入れます。別のパソコンやスマホで開くときは、承認時にメールで届く<b>あなた専用のURL</b>を使ってください（専用URLは他の人に共有しないでください）。</div>
+</section>
+
+<section id="phone">
+  <h2>スマホで使う<span class="en">SMARTPHONE</span></h2>
+  <ul>
+    <li>iPhoneのSafariは、<b>普通のタブ</b>で使えます（プライベートタブでなくて大丈夫です）。</li>
+    <li>カレンダーや表は横に長いので、<b>横にスクロール</b>して見てください。</li>
+  </ul>
+  <h3>ホーム画面に置いておくと便利です（iPhone）</h3>
+  <ol>
+    <li>SafariでカレンダーのURLを開く</li>
+    <li>画面下の<b>共有ボタン</b>（四角から上向き矢印）を押す</li>
+    <li>「<b>ホーム画面に追加</b>」→「追加」</li>
+  </ol>
+</section>
+
+<section id="season">
+  <h2>シーズンを選ぶ<span class="en">SEASON</span></h2>
+  <p>開くと最初にシーズン選択の画面が出ます。年とシーズン（SS／FW）で絞り込み、展示会ブックの表紙のカードを押すと、そのシーズンのカレンダーが開きます。</p>
+  <p>あとから切り替えたいときは、画面上部の「<b>シーズン変更</b>」を押します。</p>
+  <div class="tip">今のところ中身が入っているのは2027SSです。</div>
+</section>
+
+<section id="screen">
+  <h2>画面の見方<span class="en">TABS</span></h2>
+  <div class="tbl"><table>
+    <tr><th>タブ</th><th>中身</th></tr>
+    <tr><td>Calendar</td><td>月ごとのカレンダー。<span class="chip due">納期</span>はグレー、<span class="chip sale">EC販売</span>はライン色で表示。上の月ボタンで月を切り替え。</td></tr>
+    <tr><td>Items</td><td>品番一覧の表。列見出しで並べ替え。<b>納期・EC販売日・ラインをこの表で直接変更</b>できます。日付横の「→」でカレンダーの該当日へ。</td></tr>
+    <tr><td>EC Plan</td><td>発売計画（隔週木曜×9回）ごとに、どの品番を出すかの一覧。</td></tr>
+    <tr><td>Wholesale</td><td>国内卸の発注数量・金額のランキング。</td></tr>
+    <tr><td>EC Rank</td><td>EC＋ZOZOの発注数量ランキング。<b>★</b>は上位10品番。</td></tr>
+    <tr><td>Catalog</td><td>27SS展示会カタログ（下へスクロール）。</td></tr>
+    <tr><td>History</td><td>変更履歴。いつ・誰が・どの品番の何を変えたか。</td></tr>
+    <tr><td>Drop</td><td>ドロップになった品番（カレンダーには出ません）。</td></tr>
+  </table></div>
+  <h3>カレンダーの記号</h3>
+  <ul>
+    <li><b>●</b> 手動で動かした品番</li>
+    <li><b>EC DROP</b> 発売計画の日（隔週木曜）</li>
+    <li><b>納期近</b> 納期から2週間未満のEC販売（入荷が間に合うか要注意）</li>
+    <li><b>★</b> EC発注数ランキング上位10品番</li>
+  </ul>
+  <h3>絞り込み</h3>
+  <p>ライン（アウトドア／ミリタリー／シティ／未設定）、表示（納期・EC販売・EC発注0の品番・品番のみ）のボタンと、検索窓（品番・商品名・カテゴリー）で表示を絞れます。</p>
+</section>
+
+<section id="move">
+  <h2>日付・ラインを変える<span class="en">EDIT</span></h2>
+  <h3>カレンダーで動かす（ドラッグ＆ドロップ）</h3>
+  <ol>
+    <li>品番のカードを<b>押したまま</b>動かします（スマホは指で押したまま）。</li>
+    <li>置きたい日付の上で離すと、その日に移動します。</li>
+    <li>別の月に移したいときは、上の<b>月ボタンの上で少し止める</b>と月が切り替わります。</li>
+  </ol>
+  <p>やめたいときは、日付のないところで離すか <kbd>Esc</kbd> を押します。</p>
+  <h3>日付を入力して変える・ラインを変える</h3>
+  <p>「<b>Items</b>」タブの表で、納期・EC販売日・ラインを直接変更できます。カレンダーとは常に連動しています。</p>
+  <div class="tip">変更は保存ボタンなしで<b>すぐ全員に反映</b>されます。間違えたときは、同じ方法で元の日付に戻してください（「History」で元の日付を確認できます）。画面のデータは1分ごとに自動で最新になります。</div>
+</section>
+
+<section id="product">
+  <h2>商品ページ・カタログ<span class="en">PRODUCT</span></h2>
+  <h3>商品ページ</h3>
+  <p>カレンダーや表の品番を<b>ダブルクリック</b>（スマホは<b>ダブルタップ</b>）すると、商品ページが開きます。写真・品番・商品名・カラー・サイズ・上代（税込）・寸法・商品説明が見られます。</p>
+  <ul>
+    <li>「前の品番」「次の品番」で順番に見られます（パソコンは <kbd>←</kbd> <kbd>→</kbd> キーでも）。</li>
+    <li>「← 戻る」（または <kbd>Esc</kbd>）でカレンダーに戻ります。</li>
+  </ul>
+  <h3>カタログ</h3>
+  <p>「Catalog」タブで、展示会カタログを1ページずつ縦に見られます。スマホは2本指で拡大できます。</p>
+</section>
+
+<section id="trouble">
+  <h2>困ったとき<span class="en">FAQ</span></h2>
+  <h3>「読み込めませんでした」と出る</h3>
+  <p>通信が不安定なときに出ることがあります。少し待ってからページを再読み込みしてください。</p>
+  <h3>前は入れたのに、また申請画面が出る</h3>
+  <p>ブラウザの履歴やデータを消すと、入るための情報も消えます。承認メールの<b>専用URL</b>から開くか、@ins.fm のアドレスでもう一度申請してください（自動で承認されます）。</p>
+  <h3>前のURL（script.google.com）を開いてしまった</h3>
+  <p>「新しいURLに移りました」と出るので、オレンジのボタンを押してください。ブックマークも新しいURLに変えておくと安心です。</p>
+  <h3>「閲覧のみのため移動できません」と出る</h3>
+  <p>アクセスが止められている可能性があります。木原に連絡してください。</p>
+</section>
+
+<p class="admin-h">FOR ADMIN — 木原向け</p>
+<section id="admin" class="admin">
+  <h2>管理者向け<span class="en">ADMIN</span></h2>
+  <h3>管理者として開く</h3>
+  <p>管理者用URL（URLの最後に <code>?key=…</code> が付いたもの）で開くと、申請なしで閲覧・編集でき、画面に「管理者」と表示されます。管理者用URLはメール「[27SSカレンダー] 共有URLと管理者URL」で届きます。<b>人に共有しないでください。</b></p>
+  <h3>アクセス申請の承認</h3>
+  <ul>
+    <li>@ins.fm のアドレスは自動で承認され、木原に「自動承認」のお知らせメールが届きます。</li>
+    <li>それ以外は「[27SSカレンダー] アクセス申請」メールの「承認する」「却下する」を押します（スマホでもOK）。</li>
+  </ul>
+  <h3>アクセスを止める</h3>
+  <p>データのスプレッドシート「WT27SS_納期EC販売カレンダー_データ」の <b>users</b> シートで、その人の <b>status</b> を <code>rejected</code> に書き換えます。</p>
+  <h3>画面の修正・毎シーズンの更新</h3>
+  <ul>
+    <li>Claude（プロジェクト「WT_27SSオーダーの集計」）に依頼します。新しい画面ファイルの用意・データの更新・テストまで行います。</li>
+    <li>GitHub（アカウント Futa-ins／置き場所 wt27ss）へのファイルの差し替えだけは、木原がファイルをドラッグ＆ドロップします（手順はその都度Claudeが案内）。</li>
+  </ul>
+  <h3>しくみ（参考）</h3>
+  <ul>
+    <li>画面：GitHub Pages（futa-ins.github.io）。品番データ・画像は暗号化して置いていて、承認された人だけが開けます。</li>
+    <li>データ：Googleスプレッドシート。Google Apps Script を通して読み書きします。</li>
+  </ul>
+</section>
+
+<footer>WILD THINGS 27SS 納期・EC販売カレンダー｜お問い合わせ：木原</footer>
+</main>
+</body>
+</html>
