@@ -593,7 +593,6 @@ tr.hs-rejected td{opacity:.55}
 <div class="gate" id="gate">
   <div class="gbox">
     <div class="gtitle">WILD THINGS 27SS 納期・EC販売カレンダー</div>
-    <p style="margin:0 0 8px;font-size:13px"><a href="help.html" target="_blank" rel="noopener" style="color:inherit">使い方を見る →</a></p>
     <div id="gLoading"><p>読み込み中…</p></div>
     <form id="gForm" hidden>
       <p>このページの閲覧・編集には、木原（kihara@ins.fm）の承認が必要です（@ins.fm のアドレスは自動で承認されます）。お名前とメールアドレスを入れて申請してください。承認されると、この画面がそのままカレンダーに切り替わります。</p>
@@ -641,7 +640,7 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026101302";
+const VER="2026101303";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
@@ -682,7 +681,7 @@ async function start(quiet){
       const b=JSON.parse(new TextDecoder().decode(await dec("app.enc")));
       document.body.insertAdjacentHTML("beforeend",b.html);
       window.WTBOOT={token:TOKEN,adminKey:KEY,state:s};
-      const sc=document.createElement("script"); sc.textContent=b.js; document.body.appendChild(sc);
+      const sc=document.createElement("script"); sc.textContent=b.js; document.body.appendChild(sc); seasonTabs();
       if(quiet) setTimeout(()=>{ const t=$("toast"); if(t){ t.textContent="承認されました。カレンダーを表示します"; t.hidden=false; setTimeout(()=>t.hidden=true,5000); } },300);
     }catch(e){ fail("画面データを開けませんでした。ページを再読み込みしてください。",e); }
     return; }
@@ -694,6 +693,28 @@ $("gForm").addEventListener("submit",async ev=>{ ev.preventDefault();
   const b=$("gSend"); b.disabled=true;
   try{ const r=await api("requestAccess",name,mail); TOKEN=r.token; ls.set("wt27ss-token",TOKEN); if(r.approved) start(); else { show("pending"); pendT=setTimeout(()=>start(true),10000); } }
   catch(e){ err.textContent="申請できませんでした。時間をおいてもう一度お試しください"; err.hidden=false; b.disabled=false; } });
+// シーズン切替タブ（ヘッダー上部）。WT_seasons.json にシーズンを足すと自動でタブが増える
+async function seasonTabs(){
+  try{
+    const r=await api("getSeasons",TOKEN,KEY); const L=((r&&r.seasons)||[]).slice();
+    if(!L.length||$("stabs")) return;
+    const CUR="2027SS";
+    L.sort((a,b)=>b.year-a.year||(a.season<b.season?1:-1));
+    const st=document.createElement("style");
+    st.textContent=".stabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:14px 0 0}.stabs .lbl{font:600 11px Oswald,sans-serif;letter-spacing:.15em;color:#ff6a2b;margin-right:4px}.stab{font:600 14px Oswald,'IBM Plex Sans JP',sans-serif;letter-spacing:.06em;padding:6px 14px;border:1px solid #5a554d;background:transparent;color:#e8e3da;border-radius:3px;cursor:pointer}.stab.on{background:#ff6a2b;border-color:#ff6a2b;color:#000}.stab small{font:500 10px 'IBM Plex Sans JP',sans-serif;margin-left:6px;opacity:.75}.stab.more{font:500 12px 'IBM Plex Sans JP',sans-serif;border-style:dashed}";
+    document.head.appendChild(st);
+    const bar=document.createElement("div"); bar.id="stabs"; bar.className="stabs"; bar.setAttribute("role","tablist"); bar.setAttribute("aria-label","シーズン切替");
+    bar.innerHTML='<span class="lbl">SEASON</span>'+L.map(x=>{ const on=x.id===CUR, ready=x.status==="open"&&on;
+      return '<button type="button" role="tab" class="stab'+(on?' on':'')+'" aria-selected="'+on+'" data-sid="'+escH(x.id)+'" data-ready="'+(ready||on?1:0)+'">'+escH(x.id)+(ready||on?'':'<small>準備中</small>')+'</button>'; }).join("")
+      +'<button type="button" class="stab more" data-sid="">すべてのシーズン</button>';
+    const hero=document.querySelector(".hero"); if(!hero) return; hero.appendChild(bar);
+    bar.addEventListener("click",ev=>{ const b=ev.target.closest(".stab"); if(!b) return; const id=b.dataset.sid;
+      if(!id){ const sb=$("seasonBtn"); if(sb) sb.click(); return; }
+      if(id===CUR) return;
+      const t=$("toast"); if(t){ t.textContent=id+" はまだ準備中です"; t.hidden=false; clearTimeout(window.__stT); window.__stT=setTimeout(()=>t.hidden=true,3000); } });
+  }catch(_){}
+}
+
 start();
 })();
 </script>
