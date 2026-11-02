@@ -641,7 +641,7 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026101306";
+const VER="2026101307";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
@@ -685,7 +685,7 @@ async function start(quiet){
       document.body.insertAdjacentHTML("beforeend",b.html);
       b.js=patchApp(b.js);
       window.WTBOOT={token:TOKEN,adminKey:KEY,state:s};
-      const sc=document.createElement("script"); sc.textContent=b.js; document.body.appendChild(sc); seasonTabs();
+      const sc=document.createElement("script"); sc.textContent=b.js; document.body.appendChild(sc); seasonTabs(); if(s.auth==="admin"){ const ab=$("adminBadge"); if(ab) ab.hidden=false; }
       if(quiet) setTimeout(()=>{ const t=$("toast"); if(t){ t.textContent="承認されました。カレンダーを表示します"; t.hidden=false; setTimeout(()=>t.hidden=true,5000); } },300);
     }catch(e){ fail("画面データを開けませんでした。ページを再読み込みしてください。",e); }
     return; }
