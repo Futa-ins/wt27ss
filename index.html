@@ -646,7 +646,7 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026111311";
+const VER="2026111312";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
@@ -655,6 +655,8 @@ const READ=new Set(["boot","getState","getProduct","getSeasons"]);
 const WTSEASON=(()=>{ try{ return localStorage.getItem("wt-season")==="2027FW"?"2027FW":"2027SS"; }catch(_){ return "2027SS"; } })(); window.WTSEASON=WTSEASON;
 window.WTSWITCH=id=>{ try{ localStorage.setItem("wt-season",id); }catch(_){} location.reload(); };
 const BOOTK=WTSEASON==='2027SS'?'wt27ss-boot':'wt27ss-boot-'+WTSEASON;
+// カレンダーの表示期間（SS＝11月〜8月、FW＝5月〜翌2月）
+window.WTCAL=WTSEASON==="2027FW"?["2027-05","2028-02"]:["2026-11","2027-08"];
 // ---- シーズン別（2027FW〜）：27SSの画面本体を土台に、品番・日付まわりを差し替える ----
 function seasonCommon(js){
   const R=[
@@ -662,7 +664,9 @@ function seasonCommon(js){
     ['const L=SEASONS||[{id:"2027SS",year:2027,season:"SS",label:"2027 SPRING / SUMMER",status:"open",cover:""}];','const L=(SEASONS||[{id:"2027SS",year:2027,season:"SS",label:"2027 SPRING / SUMMER",status:"open",cover:""}]).slice(); if(!L.some(x=>x.id==="2027FW")) L.push({id:"2027FW",year:2027,season:"FW",label:"2027 FALL / WINTER",status:"open",cover:""});'],
     ['const open=x.status==="open"&&x.id===CUR_SEASON;','const open=x.id==="2027SS"||x.id==="2027FW";'],
     ['if(c.getAttribute("aria-disabled")==="true"){ toast("このシーズンはまだ準備中です"); return; } closeSeason();','if(c.getAttribute("aria-disabled")==="true"){ toast("このシーズンはまだ準備中です"); return; } if(c.dataset.season!==CUR_SEASON){ window.WTSWITCH(c.dataset.season); return; } closeSeason();'],
-    ['localStorage.setItem("wt-season","2027SS");','localStorage.setItem("wt-season",CUR_SEASON);']
+    ['localStorage.setItem("wt-season","2027SS");','localStorage.setItem("wt-season",CUR_SEASON);'],
+    ['let min="2026-10", max="2027-05";','let min=window.WTCAL[0], max=window.WTCAL[1];'],
+    ['let a=new Date(2026,10,1), b=new Date(2027,7,1);\n  const ds=[tvIso(now)];','let a=new Date(+window.WTCAL[0].slice(0,4),+window.WTCAL[0].slice(5,7)-1,1), b=new Date(+window.WTCAL[1].slice(0,4),+window.WTCAL[1].slice(5,7)-1,1);\n  const ds=[];']
   ];
   for(const [a,b] of R) if(js.includes(a)) js=js.split(a).join(b);
   return js;
@@ -683,7 +687,6 @@ function fwApply(js,s){
     ['const monthKey=s=>s.slice(0,7);','const monthKey=s=>(s||"").slice(0,7);'],
     ['if(st.kinds.due) out.push(','if(st.kinds.due&&e.due) out.push('],
     ['if(st.kinds.sale) out.push(','if(st.kinds.sale&&e.sale) out.push('],
-    ['let min="2026-10", max="2027-05";','let min="2027-05", max="2027-12";'],
     ['const e=eff(i); if(monthKey(e.due)<min)min=monthKey(e.due); if(monthKey(e.sale)>max)max=monthKey(e.sale);','const e=eff(i); if(e.due&&monthKey(e.due)<min)min=monthKey(e.due); if(e.sale&&monthKey(e.sale)>max)max=monthKey(e.sale);'],
     ['const tooEarly=(e)=>e.sale<addDays(e.due,LEAD);','const tooEarly=(e)=>!!(e.sale&&e.due)&&e.sale<addDays(e.due,LEAD);'],
     ['<tr class="mgrp"><td colspan="10">${y}年${+mo}月 ','<tr class="mgrp"><td colspan="10">${m?y+"年"+(+mo)+"月":"未定"} '],
