@@ -440,6 +440,11 @@ tr.hs-rejected td{opacity:.55}
 .hero .ssbtn:hover{border-color:var(--blaze);color:var(--blaze)}
 @media (max-width:640px){ .ss-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px} .ss-meta b{font-size:15px} .ss-top{padding-top:20px} }
 </style>
+<style id="wtbg">
+html{background:#0b0a09!important}
+body{background:transparent!important}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(rgba(10,9,9,.70),rgba(10,9,9,.86)),url(bg27ss.webp?v=1) center/cover no-repeat}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -641,7 +646,7 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026111308";
+const VER="2026111309";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
