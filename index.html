@@ -646,16 +646,86 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026111309";
+const VER="2026111310";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
 const escH=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const READ=new Set(["boot","getState","getProduct","getSeasons"]);
+const WTSEASON=(()=>{ try{ return localStorage.getItem("wt-season")==="2027FW"?"2027FW":"2027SS"; }catch(_){ return "2027SS"; } })(); window.WTSEASON=WTSEASON;
+window.WTSWITCH=id=>{ try{ localStorage.setItem("wt-season",id); }catch(_){} location.reload(); };
+const BOOTK=WTSEASON==='2027SS'?'wt27ss-boot':'wt27ss-boot-'+WTSEASON;
+// ---- シーズン別（2027FW〜）：27SSの画面本体を土台に、品番・日付まわりを差し替える ----
+function seasonCommon(js){
+  const R=[
+    ['const CUR_SEASON="2027SS";','const CUR_SEASON=window.WTSEASON||"2027SS";'],
+    ['const L=SEASONS||[{id:"2027SS",year:2027,season:"SS",label:"2027 SPRING / SUMMER",status:"open",cover:""}];','const L=(SEASONS||[{id:"2027SS",year:2027,season:"SS",label:"2027 SPRING / SUMMER",status:"open",cover:""}]).slice(); if(!L.some(x=>x.id==="2027FW")) L.push({id:"2027FW",year:2027,season:"FW",label:"2027 FALL / WINTER",status:"open",cover:""});'],
+    ['const open=x.status==="open"&&x.id===CUR_SEASON;','const open=x.id==="2027SS"||x.id==="2027FW";'],
+    ['if(c.getAttribute("aria-disabled")==="true"){ toast("このシーズンはまだ準備中です"); return; } closeSeason();','if(c.getAttribute("aria-disabled")==="true"){ toast("このシーズンはまだ準備中です"); return; } if(c.dataset.season!==CUR_SEASON){ window.WTSWITCH(c.dataset.season); return; } closeSeason();'],
+    ['localStorage.setItem("wt-season","2027SS");','localStorage.setItem("wt-season",CUR_SEASON);']
+  ];
+  for(const [a,b] of R) if(js.includes(a)) js=js.split(a).join(b);
+  return js;
+}
+function fwApply(js,s){
+  const items=JSON.stringify((s&&s.items)||[]);
+  const RX=[
+    [/const ITEMS = \[[\s\S]*?\];\nconst LINE_KEY/,'const ITEMS = '+items+';\nconst LINE_KEY'],
+    [/const DROPS = \[[\s\S]*?\];\nfunction renderDrop/,'const DROPS = [];\nfunction renderDrop'],
+    [/const SLOTS = \[[\s\S]*?\];\n/,'const SLOTS = [];\n'],
+    [/const CATALOG = \[[\s\S]*?\];\nconst CAT_PAGE = \{[\s\S]*?\};/,'const CATALOG = [];\nconst CAT_PAGE = {};']
+  ];
+  for(const [re,b] of RX) js=js.replace(re,()=>b);
+  const R=[
+    ['const CAT_N=40;','const CAT_N=0;'],
+    ['const EC_TOP=new Set(ecRank.slice(0,10).map(i=>i.c));','const EC_TOP=new Set(ecRank.filter(i=>i.ec+i.zz>0).slice(0,10).map(i=>i.c));'],
+    ['const fmt=s=>{const d=parse(s);','const fmt=s=>{if(!s) return "未定"; const d=parse(s);'],
+    ['const monthKey=s=>s.slice(0,7);','const monthKey=s=>(s||"").slice(0,7);'],
+    ['if(st.kinds.due) out.push(','if(st.kinds.due&&e.due) out.push('],
+    ['if(st.kinds.sale) out.push(','if(st.kinds.sale&&e.sale) out.push('],
+    ['let min="2026-10", max="2027-05";','let min="2027-05", max="2027-12";'],
+    ['const e=eff(i); if(monthKey(e.due)<min)min=monthKey(e.due); if(monthKey(e.sale)>max)max=monthKey(e.sale);','const e=eff(i); if(e.due&&monthKey(e.due)<min)min=monthKey(e.due); if(e.sale&&monthKey(e.sale)>max)max=monthKey(e.sale);'],
+    ['const tooEarly=(e)=>e.sale<addDays(e.due,LEAD);','const tooEarly=(e)=>!!(e.sale&&e.due)&&e.sale<addDays(e.due,LEAD);'],
+    ['<tr class="mgrp"><td colspan="10">${y}年${+mo}月 ','<tr class="mgrp"><td colspan="10">${m?y+"年"+(+mo)+"月":"未定"} '],
+    ['<span>発売 <b>${SLOTS.length}</b> 回（${fmt(SLOTS[0].d)}〜${fmt(SLOTS[SLOTS.length-1].d)}・隔週木曜）</span>','<span>発売計画 <b>未設定</b>（日付は品番一覧・カレンダーで入れてください）</span>'],
+    ['<td class="mono">${thumb(i.c,"tt")}${starHTML(i.c)}${i.c}</td>','<td class="mono">${thumb(i.c,"tt")}${starHTML(i.c)}${i.c}<button class="fwph" data-code="${i.c}" title="写真を登録">${THUMBS[i.c]?"写真変更":"＋写真"}</button></td>'],
+    [`'<span class="ph">写真なし</span>');`,`'<span class="ph">写真なし</span>')+\`<button class="fwph pp" data-code="\${code}">\${THUMBS[code]?"写真を変更":"写真を登録"}</button>\`;`],
+    ['document.getElementById("ppColors").innerHTML=p?tags(p.colors):','document.getElementById("ppColors").innerHTML=(!p&&i.colors)?tags(i.colors):p?tags(p.colors):'],
+    ['spInit(); const v=document.getElementById("spView"); if(!v||v.hidden) return;','spInit(); const v=document.getElementById("spView"); if(!v||v.hidden) return; v.innerHTML=\'<div class="sp-sec"><h3>SALES PLAN <small>\'+window.WTSEASON+\' 販売計画</small></h3><p class="sp-note">このシーズンの販売計画はまだ作成されていません。</p></div>\'; return;'],
+    ['\nconst CATALOG = [];',`
+const FWTH=async()=>{ try{ const r=await gs("getThumbs",TOKEN,ADMIN_KEY); if(r&&r.thumbs){ Object.assign(THUMBS,r.thumbs); render(); } }catch(_){} };
+setTimeout(FWTH,30);
+async function fwShrink(f){ const bmp=await createImageBitmap(f); let w=bmp.width,h=bmp.height; const k=Math.min(1,360/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,w,h); cx.drawImage(bmp,0,0,w,h);
+  for(const q of [0.82,0.7,0.6,0.5,0.4]){ let u=cv.toDataURL("image/webp",q); if(!u.startsWith("data:image/webp")) u=cv.toDataURL("image/jpeg",q); if(u.length<48000) return u; }
+  throw new Error("画像が大きすぎます"); }
+function fwPick(code){ if(!canWrite){ toast("閲覧のみのため写真を登録できません"); return; }
+  const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; toast("写真を登録しています…",20000);
+    try{ const url=await fwShrink(f); const r=await gs("setThumb",code,url,TOKEN,ADMIN_KEY); if(r&&r.auth&&r.auth!=="ok"&&r.auth!=="admin"){ gate(r.auth); return; }
+      THUMBS[code]=url; render(); if(ppCode===code) openProduct(code); toast(code+" の写真を登録しました"); }
+    catch(e){ toast("写真を登録できませんでした："+String(e&&e.message||e).slice(0,80),8000); } };
+  inp.click(); }
+document.addEventListener("click",ev=>{ const b=ev.target.closest&&ev.target.closest(".fwph"); if(!b) return; ev.preventDefault(); ev.stopPropagation(); fwPick(b.dataset.code); },true);
+const CATALOG = [];`]
+  ];
+  const miss=[]; for(const [a,b] of R){ if(js.includes(a)) js=js.split(a).join(b); else miss.push(a.slice(0,40)); }
+  if(miss.length) console.warn("fwApply miss",miss);
+  return js;
+}
+function fwChrome(){
+  document.title="WILDTHINGS 2027FW 納期・EC販売カレンダー";
+  const se=document.querySelector(".hero .season"); if(se) se.textContent="2027 FALL / WINTER";
+  const sb=document.querySelector(".hero .sub"); if(sb) sb.textContent="品番＝27FW展示会サンプル確認より（品番・商品名・カラー）／納期・EC販売日は未定。品番一覧で日付を入れるとカレンダーに表示されます";
+  const st=document.createElement("style"); st.textContent=".fwph{margin-left:6px;font:600 10px 'IBM Plex Sans JP',sans-serif;padding:2px 6px;border:1px dashed #ff6a2b;background:transparent;color:#ff6a2b;border-radius:3px;cursor:pointer;vertical-align:middle}.fwph:hover{background:#ff6a2b;color:#000}.fwph.pp{display:block;margin:10px 0 0;font-size:12px;padding:6px 12px}";
+  document.head.appendChild(st);
+  const cv=document.getElementById("catView"); const cp=cv&&cv.querySelector("p"); if(cp) cp.textContent="2027FW の展示会カタログはまだ登録されていません。";
+}
+
 async function api(fn,...args){
   for(let n=0;;n++){
     let j=null;
-    try{ const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn,args})});
+    try{ const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn,args,season:WTSEASON})});
       if(!r.ok) throw new Error("HTTP "+r.status); j=JSON.parse(await r.text()); }
     catch(e){ if(READ.has(fn)&&n<2){ await new Promise(r=>setTimeout(r,800*(n+1))); continue; } throw e; }
     if(!j.ok) throw new Error(j.error||"error"); return j.result; } }
@@ -684,13 +754,13 @@ PATCHES.push(["let PEND_N=0, SAVE_Q=Promise.resolve();","let PEND_N=0, SAVE_Q=Pr
 PATCHES.push(["let PEND_N=0, SAVE_Q=Promise.resolve();","let PEND_N=0, SAVE_Q=Promise.resolve(); try{ if(localStorage.getItem(\"wt-season\")) window.__seasonDone=true; }catch(_){}"],["document.body.style.overflow=\"\"; window.__seasonDone=true; }","document.body.style.overflow=\"\"; window.__seasonDone=true; try{ localStorage.setItem(\"wt-season\",\"2027SS\"); }catch(_){} }"],["if(st.lifted&&v!==\"cal\") drop();\n  st.view=v;","if(st.lifted&&v!==\"cal\") drop();\n  st.view=v; try{ localStorage.setItem(\"wt-view\",v); }catch(_){}"],["tvInit(); spInit(); render(); }","tvInit(); spInit(); render(); if(!window.__viewRestored){ window.__viewRestored=true; try{ const sv=localStorage.getItem(\"wt-view\"); if(sv&&sv!==st.view&&document.querySelector('.tab[data-view=\"'+sv+'\"]')) setView(sv); }catch(_){} } }"]); // 更新時に前回のシーズン・タブで開く
 PATCHES.push(["setInterval(()=>{ if(AUTHED&&!st.lifted&&!document.hidden) refresh(); },60000);","setInterval(()=>{ if(AUTHED&&!st.lifted&&!document.hidden) refresh(); },60000); window.WTAPPLY=s=>{ try{ if(PEND_N>0) return; applyState(s); }catch(_){} };"]); // 高速起動の差し替え用
 function patchApp(js){ if(js.indexOf("function DUE_OK")>=0) return js; for(const p of PATCHES){ if(js.indexOf(p[0])>=0) js=js.split(p[0]).join(p[1]); } return js; }
-function saveBoot(s){ try{ const st=Object.assign({},s); delete st.appKey; localStorage.setItem("wt27ss-boot",JSON.stringify({who:TOKEN+"|"+KEY,appKey:s.appKey,state:st,t:Date.now()})); }catch(_){ try{ localStorage.removeItem("wt27ss-boot"); }catch(__){} } }
+function saveBoot(s){ try{ const st=Object.assign({},s); delete st.appKey; localStorage.setItem(BOOTK,JSON.stringify({who:TOKEN+"|"+KEY,appKey:s.appKey,state:st,t:Date.now()})); }catch(_){ try{ localStorage.removeItem(BOOTK); }catch(__){} } }
 async function launch(s,appKey,quiet){
   const raw=Uint8Array.from(atob(appKey),c=>c.charCodeAt(0));
   CK=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
   const b=JSON.parse(new TextDecoder().decode(await dec("app.enc")));
   document.body.insertAdjacentHTML("beforeend",b.html);
-  b.js=patchApp(b.js);
+  b.js=seasonCommon(patchApp(b.js)); if(WTSEASON!=="2027SS"){ b.js=fwApply(b.js,s); fwChrome(); }
   window.WTBOOT={token:TOKEN,adminKey:KEY,state:s};
   const sc=document.createElement("script"); sc.textContent=b.js; document.body.appendChild(sc); seasonTabs(); if(s.auth==="admin"){ const ab=$("adminBadge"); if(ab) ab.hidden=false; }
   if(quiet) setTimeout(()=>{ const t=$("toast"); if(t){ t.textContent="承認されました。カレンダーを表示します"; t.hidden=false; setTimeout(()=>t.hidden=true,5000); } },300);
@@ -698,18 +768,18 @@ async function launch(s,appKey,quiet){
 // 高速起動：前回の画面データ（この端末に保存）ですぐ表示し、裏で最新を取得して差し替える
 async function start(quiet){
   clearTimeout(pendT);
-  if(!quiet&&!window.__fastTried){ window.__fastTried=true; let C=null; try{ C=JSON.parse(localStorage.getItem("wt27ss-boot")||"null"); }catch(_){}
+  if(!quiet&&!window.__fastTried){ window.__fastTried=true; let C=null; try{ C=JSON.parse(localStorage.getItem(BOOTK)||"null"); }catch(_){}
     if(C&&C.appKey&&C.state&&C.who===TOKEN+"|"+KEY){
-      try{ await launch(C.state,C.appKey,false); }catch(e){ try{ localStorage.removeItem("wt27ss-boot"); }catch(_){} location.reload(); return; }
+      try{ await launch(C.state,C.appKey,false); }catch(e){ try{ localStorage.removeItem(BOOTK); }catch(_){} location.reload(); return; }
       api("boot",TOKEN,KEY).then(s=>{ if(s&&s.appKey){ saveBoot(s); if(s.appKey!==C.appKey){ location.reload(); return; } if(window.WTAPPLY) window.WTAPPLY(s); }
-        else { try{ localStorage.removeItem("wt27ss-boot"); }catch(_){} location.reload(); } }).catch(()=>{});
+        else { try{ localStorage.removeItem(BOOTK); }catch(_){} location.reload(); } }).catch(()=>{});
       return; } }
   if(!quiet) show("loading");
   let s; try{ s=await api("boot",TOKEN,KEY); }catch(e){ if(quiet){ pendT=setTimeout(()=>start(true),15000); return; } fail("読み込めませんでした。時間をおいてページを再読み込みしてください。",e); return; }
   if(s&&s.appKey){ saveBoot(s);
     try{ await launch(s,s.appKey,quiet); }catch(e){ fail("画面データを開けませんでした。ページを再読み込みしてください。",e); }
     return; }
-  try{ localStorage.removeItem("wt27ss-boot"); }catch(_){}
+  try{ localStorage.removeItem(BOOTK); }catch(_){}
   const st=(s&&s.auth)||"none"; show(st==="ok"||st==="admin"?"loading":st);
   if(st==="pending") pendT=setTimeout(()=>start(true),10000); }
 $("gForm").addEventListener("submit",async ev=>{ ev.preventDefault();
@@ -723,19 +793,19 @@ async function seasonTabs(){
   try{
     let r=null; try{ r=JSON.parse(localStorage.getItem("wt27ss-seasons")||"null"); }catch(_){} const upd=api("getSeasons",TOKEN,KEY).then(x=>{ try{ localStorage.setItem("wt27ss-seasons",JSON.stringify(x)); }catch(_){} return x; }); if(!r) r=await upd; else upd.catch(()=>{}); const L=((r&&r.seasons)||[]).slice();
     if(!L.length||$("stabs")) return;
-    const CUR="2027SS";
+    const CUR=WTSEASON; if(!L.some(x=>x.id==="2027FW")) L.push({id:"2027FW",year:2027,season:"FW",label:"2027 FALL / WINTER",status:"open"});
     L.sort((a,b)=>b.year-a.year||(a.season<b.season?1:-1));
     const st=document.createElement("style");
     st.textContent=".stabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:14px 0 0}.stabs .lbl{font:600 11px Oswald,sans-serif;letter-spacing:.15em;color:#ff6a2b;margin-right:4px}.stab{font:600 14px Oswald,'IBM Plex Sans JP',sans-serif;letter-spacing:.06em;padding:6px 14px;border:1px solid #5a554d;background:transparent;color:#e8e3da;border-radius:3px;cursor:pointer}.stab.on{background:#ff6a2b;border-color:#ff6a2b;color:#000}.stab small{font:500 10px 'IBM Plex Sans JP',sans-serif;margin-left:6px;opacity:.75}.stab.more{font:500 12px 'IBM Plex Sans JP',sans-serif;border-style:dashed}";
     document.head.appendChild(st);
     const bar=document.createElement("div"); bar.id="stabs"; bar.className="stabs"; bar.setAttribute("role","tablist"); bar.setAttribute("aria-label","シーズン切替");
-    bar.innerHTML='<span class="lbl">SEASON</span>'+L.map(x=>{ const on=x.id===CUR, ready=x.status==="open"&&on;
+    bar.innerHTML='<span class="lbl">SEASON</span>'+L.map(x=>{ const on=x.id===CUR, ready=x.id==="2027SS"||x.id==="2027FW";
       return '<button type="button" role="tab" class="stab'+(on?' on':'')+'" aria-selected="'+on+'" data-sid="'+escH(x.id)+'" data-ready="'+(ready||on?1:0)+'">'+escH(x.id)+(ready||on?'':'<small>準備中</small>')+'</button>'; }).join("")
       +'<button type="button" class="stab more" data-sid="">すべてのシーズン</button>';
     const hero=document.querySelector(".hero"); if(!hero) return; hero.appendChild(bar);
     bar.addEventListener("click",ev=>{ const b=ev.target.closest(".stab"); if(!b) return; const id=b.dataset.sid;
       if(!id){ const sb=$("seasonBtn"); if(sb) sb.click(); return; }
-      if(id===CUR) return;
+      if(id===CUR) return; if(b.dataset.ready==="1"){ window.WTSWITCH(id); return; }
       const t=$("toast"); if(t){ t.textContent=id+" はまだ準備中です"; t.hidden=false; clearTimeout(window.__stT); window.__stT=setTimeout(()=>t.hidden=true,3000); } });
   }catch(_){}
 }
