@@ -646,7 +646,7 @@ window.onerror=function(m,src,l,c,e){try{var el=document.getElementById("status"
 <script>
 (function(){
 const API="https://script.google.com/macros/s/AKfycbwL9OumzwcKSrdYD1-gvKGhwRO-2NeFGdtRfKxfIpPE1GuYC_OwaU-5jX2HXZPu0HG7/exec", BUILD="202610100120";
-const VER="2026111310";
+const VER="2026111311";
 // 画面を更新したら VER を変える。古い画面が残っていたら自動で読み直す（ホーム画面アプリ対策）
 try{ fetch(location.href,{cache:"reload"}).then(r=>r.text()).then(t=>{ const m=t.match(/const VER="(\d+)"/); if(m&&m[1]!==VER){ let done=""; try{done=sessionStorage.getItem("wtv")||"";}catch(_){} if(done!==m[1]){ try{sessionStorage.setItem("wtv",m[1]);}catch(_){} location.reload(); } } }).catch(()=>{}); }catch(_){}
 const $=id=>document.getElementById(id);
@@ -693,7 +693,7 @@ function fwApply(js,s){
     ['document.getElementById("ppColors").innerHTML=p?tags(p.colors):','document.getElementById("ppColors").innerHTML=(!p&&i.colors)?tags(i.colors):p?tags(p.colors):'],
     ['spInit(); const v=document.getElementById("spView"); if(!v||v.hidden) return;','spInit(); const v=document.getElementById("spView"); if(!v||v.hidden) return; v.innerHTML=\'<div class="sp-sec"><h3>SALES PLAN <small>\'+window.WTSEASON+\' 販売計画</small></h3><p class="sp-note">このシーズンの販売計画はまだ作成されていません。</p></div>\'; return;'],
     ['\nconst CATALOG = [];',`
-const FWTH=async()=>{ try{ const r=await gs("getThumbs",TOKEN,ADMIN_KEY); if(r&&r.thumbs){ Object.assign(THUMBS,r.thumbs); render(); } }catch(_){} };
+const FWTH=async()=>{ const LK="wt-thumbs-"+window.WTSEASON; try{ const c=JSON.parse(localStorage.getItem(LK)||"null"); if(c){ Object.assign(THUMBS,c); render(); } }catch(_){} try{ const r=await gs("getThumbs",TOKEN,ADMIN_KEY); if(r&&r.thumbs){ Object.assign(THUMBS,r.thumbs); render(); try{ localStorage.setItem(LK,JSON.stringify(r.thumbs)); }catch(_){} } }catch(_){} };
 setTimeout(FWTH,30);
 async function fwShrink(f){ const bmp=await createImageBitmap(f); let w=bmp.width,h=bmp.height; const k=Math.min(1,360/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,w,h); cx.drawImage(bmp,0,0,w,h);
@@ -755,7 +755,10 @@ PATCHES.push(["let PEND_N=0, SAVE_Q=Promise.resolve();","let PEND_N=0, SAVE_Q=Pr
 PATCHES.push(["setInterval(()=>{ if(AUTHED&&!st.lifted&&!document.hidden) refresh(); },60000);","setInterval(()=>{ if(AUTHED&&!st.lifted&&!document.hidden) refresh(); },60000); window.WTAPPLY=s=>{ try{ if(PEND_N>0) return; applyState(s); }catch(_){} };"]); // 高速起動の差し替え用
 function patchApp(js){ if(js.indexOf("function DUE_OK")>=0) return js; for(const p of PATCHES){ if(js.indexOf(p[0])>=0) js=js.split(p[0]).join(p[1]); } return js; }
 function saveBoot(s){ try{ const st=Object.assign({},s); delete st.appKey; localStorage.setItem(BOOTK,JSON.stringify({who:TOKEN+"|"+KEY,appKey:s.appKey,state:st,t:Date.now()})); }catch(_){ try{ localStorage.removeItem(BOOTK); }catch(__){} } }
-async function launch(s,appKey,quiet){
+// 裏でもう一方のシーズンも読み込んでおく（シーズン切替を速くする）
+function wtPrefetch(){ if(window.__wtPre) return; window.__wtPre=1; const o=WTSEASON==="2027SS"?"2027FW":"2027SS"; const ok=o==="2027SS"?'wt27ss-boot':'wt27ss-boot-'+o;
+  fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn:"boot",args:[TOKEN,KEY],season:o})}).then(r=>r.json()).then(j=>{ const s2=j&&j.ok&&j.result; if(s2&&s2.appKey){ const st2=Object.assign({},s2); delete st2.appKey; try{ localStorage.setItem(ok,JSON.stringify({who:TOKEN+"|"+KEY,appKey:s2.appKey,state:st2,t:Date.now()})); }catch(_){} } }).catch(()=>{}); }
+async function launch(s,appKey,quiet){ setTimeout(wtPrefetch,4000);
   const raw=Uint8Array.from(atob(appKey),c=>c.charCodeAt(0));
   CK=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
   const b=JSON.parse(new TextDecoder().decode(await dec("app.enc")));
